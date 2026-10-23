@@ -155,22 +155,30 @@
       .game {
         flex: 1 1 auto;
         min-height: 0;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+        display: flex;
+        flex-direction: column;
         align-items: stretch;
         gap: 5px;
       }
-      .panel { min-height: 0; padding: 6px; border-radius: 10px; }
+      .game > .panel { min-height: 0; padding: 6px; border-radius: 10px; }
+      .game > .panel:first-child { flex: 0 0 auto; }
+      .game > .panel:last-child { flex: 1 1 auto; overflow: hidden; }
       .game h2 { font-size: .8rem; }
       .board {
-        width: min(100%, calc((100svh - 120px) * var(--image-ratio, 1)));
-        max-height: calc(100svh - 120px);
+        width: min(100%, calc((100svh - 300px) * var(--image-ratio, 1)));
+        max-height: calc(100svh - 300px);
         margin-top: 5px;
       }
       .pieces {
         grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
         gap: 3px;
         margin-top: 5px;
+        max-height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
       }
+      .pieces .tile { width: min(100%, 56px); justify-self: center; }
       .tile { border-width: 1px; border-radius: 3px; }
       .board .tile { border-radius: 0; }
     }
