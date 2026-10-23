@@ -128,34 +128,50 @@
     .board .tile { height: 100%; border: 0; border-radius: 0; box-shadow: none; }
     @media (max-width: 700px) {
       body {
-        min-height: 100svh;
-        padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
+        height: 100vh;
+        height: 100svh;
+        min-height: 0;
+        overflow: hidden;
+        padding: max(4px, env(safe-area-inset-top)) 6px max(4px, env(safe-area-inset-bottom));
       }
-      .app { width: 100%; }
-      .topbar { align-items: center; gap: 6px; margin-bottom: 8px; }
-      h1 { font-size: 1.3rem; }
+      .app {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+      .topbar { align-items: center; gap: 4px; margin-bottom: 5px; }
+      .eyebrow { display: none; }
+      h1 { font-size: 1.1rem; }
       .controls { width: 100%; }
-      .controls > * { flex: 1 1 0; min-width: 0; padding: 8px 6px; font-size: .84rem; }
-      .status { padding: 8px 10px; margin-bottom: 8px; font-size: .84rem; }
-      .win { padding: 10px 12px; margin-bottom: 8px; }
+      .controls > * { flex: 1 1 0; min-width: 0; min-height: 36px; padding: 5px 4px; font-size: .78rem; }
+      .status { flex: 0 0 auto; padding: 6px 8px; margin-bottom: 5px; overflow: hidden; font-size: .74rem; white-space: nowrap; text-overflow: ellipsis; }
+      .win { flex: 0 0 auto; padding: 6px 8px; margin-bottom: 5px; }
+      .win-icon { font-size: 1.4rem; }
+      .win h2 { font-size: .9rem; }
+      .win p { font-size: .78rem; }
       .preview { display: none; }
       .game {
+        flex: 1 1 auto;
+        min-height: 0;
         grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
-        align-items: start;
-        gap: 8px;
+        align-items: stretch;
+        gap: 5px;
       }
-      .panel { padding: 8px; border-radius: 12px; }
-      .game h2 { font-size: .9rem; }
+      .panel { min-height: 0; padding: 6px; border-radius: 10px; }
+      .game h2 { font-size: .8rem; }
       .board {
-        width: min(100%, calc((100svh - 230px) * var(--image-ratio, 1)));
-        margin-top: 8px;
+        width: min(100%, calc((100svh - 120px) * var(--image-ratio, 1)));
+        max-height: calc(100svh - 120px);
+        margin-top: 5px;
       }
       .pieces {
         grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
-        gap: 4px;
-        margin-top: 8px;
+        gap: 3px;
+        margin-top: 5px;
       }
-      .tile { border-width: 1px; border-radius: 5px; }
+      .tile { border-width: 1px; border-radius: 3px; }
       .board .tile { border-radius: 0; }
     }
     @media (min-width: 701px) {
