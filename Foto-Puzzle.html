@@ -99,7 +99,7 @@
       border-radius: 8px;
       background: rgba(148, 163, 184, .35);
     }
-    .slot { min-width: 0; min-height: 0; overflow: hidden; background: rgba(15, 23, 42, .35); }
+    .slot { min-width: 0; min-height: 0; overflow: hidden; background: rgba(15, 23, 42, .35); touch-action: manipulation; }
     .slot.correct { outline: 1px solid rgba(52, 211, 153, .65); outline-offset: -1px; }
     .pieces {
       --piece-ratio: 1;
@@ -290,8 +290,9 @@
           }
           return;
         }
+        trayEl.querySelector('.tile.selected')?.classList.remove('selected');
         selectedId = selectedId === piece.id ? null : piece.id;
-        renderTray();
+        if (selectedId !== null) event.currentTarget.classList.add('selected');
         statusText.textContent = selectedId === null
           ? 'Auswahl aufgehoben.'
           : 'Teil gewählt — tippe auf das passende Feld.';
