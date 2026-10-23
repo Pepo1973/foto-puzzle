@@ -1,0 +1,27 @@
+{
+  "id": "./Foto-Puzzle.html",
+  "name": "Foto Puzzle",
+  "short_name": "Foto Puzzle",
+  "description": "Setze dein Foto als Puzzle wieder zusammen.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

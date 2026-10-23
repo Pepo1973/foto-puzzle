@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Foto Puzzle">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Foto Puzzle</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --text: #e2e8f0;
+      --muted: #cbd5e1;
+      --panel: rgba(15, 23, 42, 0.86);
+      --border: rgba(148, 163, 184, 0.3);
+      --accent: #0ea5e9;
+      --success: #34d399;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: max(12px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom));
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1d4ed8, #0f172a 55%);
+    }
+
+    button, select, .upload {
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text);
+      background: #172554;
+      font: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button { border: 0; background: linear-gradient(135deg, #38bdf8, var(--accent)); font-weight: 700; }
+    button:active, .upload:active { transform: scale(.98); }
+
+    .app { width: min(100%, 1000px); margin: 0 auto; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .eyebrow { margin: 0 0 3px; color: var(--muted); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(1.5rem, 5vw, 2rem); }
+    h2 { margin: 0; font-size: 1.1rem; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .upload {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .file-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      border: 0;
+      cursor: pointer;
+    }
+    .upload:focus-within { outline: 3px solid #fbbf24; outline-offset: 2px; }
+    .status, .panel, .win {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+    .status { padding: 12px 14px; margin-bottom: 12px; color: var(--muted); }
+    .win { display: flex; align-items: center; gap: 12px; padding: 14px 18px; margin-bottom: 12px; border-color: rgba(52, 211, 153, .65); background: linear-gradient(120deg, #064e3b, #0f172a); }
+    .win[hidden] { display: none; }
+    .win-icon { font-size: 2rem; }
+    .win h2 { color: #a7f3d0; }
+    .win p { margin: 3px 0 0; }
+    .preview { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; padding: 12px; }
+    .preview img { display: block; width: min(30vw, 170px); max-height: 130px; aspect-ratio: var(--image-ratio, 1); object-fit: contain; border-radius: 10px; background: #0f172a; }
+    .game { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(250px, .9fr); align-items: start; gap: 12px; }
+    .panel { min-width: 0; padding: 14px; }
+    .board {
+      --grid-size: 3;
+      display: grid;
+      grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
+      grid-template-rows: repeat(var(--grid-size), minmax(0, 1fr));
+      gap: 2px;
+      width: min(100%, 560px);
+      aspect-ratio: var(--image-ratio, 1);
+      margin: 12px auto 0;
+      overflow: hidden;
+      border-radius: 8px;
+      background: rgba(148, 163, 184, .35);
+    }
+    .slot { min-width: 0; min-height: 0; overflow: hidden; background: rgba(15, 23, 42, .35); }
+    .slot.correct { outline: 1px solid rgba(52, 211, 153, .65); outline-offset: -1px; }
+    .pieces {
+      --piece-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: start;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tile {
+      display: block;
+      width: 100%;
+      min-height: 0;
+      aspect-ratio: var(--piece-ratio, 1);
+      padding: 0;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,.75);
+      border-radius: 8px;
+      background: #1e293b;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .tile img { display: block; width: 100%; height: 100%; object-fit: fill; }
+    .tile.selected { outline: 3px solid #fbbf24; outline-offset: 1px; }
+    .board .tile { height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+    @media (max-width: 700px) {
+      body { padding-left: 10px; padding-right: 10px; }
+      .topbar { align-items: flex-start; }
+      .controls { width: 100%; }
+      .controls > * { flex: 1 1 auto; }
+      .game { grid-template-columns: 1fr; }
+      .panel { padding: 12px; }
+      .board { width: min(100%, 560px); }
+      .pieces { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (min-width: 701px) {
+      .pieces { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Mini-Spiel</p>
+        <h1>Foto Puzzle</h1>
+      </div>
+      <div class="controls">
+        <label class="upload">
+          📷 Foto laden
+          <input id="imageUpload" class="file-input" type="file" accept="image/*" aria-label="Foto auswählen">
+        </label>
+        <select id="difficulty" aria-label="Schwierigkeitsgrad">
+          <option value="3">3 × 3</option>
+          <option value="4">4 × 4</option>
+          <option value="5">5 × 5</option>
+        </select>
+        <button id="newGameBtn" type="button">Neues Bild</button>
+      </div>
+    </header>
+
+    <div id="statusText" class="status" role="status" aria-live="polite">Wähle ein Foto oder spiele mit einem Beispielbild.</div>
+    <section id="winMessage" class="win" role="status" aria-live="polite" hidden>
+      <span class="win-icon" aria-hidden="true">🎉</span>
+      <div><h2>Glückwunsch!</h2><p>Du hast das Bild gelöst!</p></div>
+    </section>
+    <section class="panel preview">
+      <div><h2>Vollbild</h2><p class="eyebrow">So sieht das fertige Puzzle aus</p></div>
+      <img id="fullImagePreview" alt="Vorschau des vollständigen Bildes">
+    </section>
+
+    <main class="game">
+      <section class="panel">
+        <h2>Puzzle</h2>
+        <div id="board" class="board" aria-label="Puzzle-Brett"></div>
+      </section>
+      <section class="panel">
+        <h2>Puzzleteile <span id="pieceCount"></span></h2>
+        <div id="tray" class="pieces" aria-label="Puzzleteile"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const trayEl = document.getElementById('tray');
+    const difficultyEl = document.getElementById('difficulty');
+    const imageUpload = document.getElementById('imageUpload');
+    const statusText = document.getElementById('statusText');
+    const winMessage = document.getElementById('winMessage');
+    const preview = document.getElementById('fullImagePreview');
+    const pieceCount = document.getElementById('pieceCount');
+
+    function svgImage(svg) {
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
+    }
+
+    const sampleImages = [
+      svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><defs><linearGradient id="s" x2="0" y2="1"><stop stop-color="#7dd3fc"/><stop offset="1" stop-color="#f9a8d4"/></linearGradient></defs><rect width="800" height="800" fill="url(#s)"/><circle cx="640" cy="140" r="90" fill="#fef3c7"/><path d="M0 560 180 360 290 480 420 260 590 560Z" fill="#334155"/><path d="M0 620 210 440 340 560 520 300 800 620V800H0Z" fill="#0f172a"/><path d="M80 610Q230 520 310 610T540 610V800H80Z" fill="#0ea5e9"/></svg>`),
+      svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><rect width="800" height="800" fill="#f5d0fe"/><rect y="500" width="800" height="300" fill="#1e293b"/><rect x="80" y="250" width="120" height="250" fill="#cbd5e1"/><rect x="220" y="180" width="150" height="320" fill="#94a3b8"/><rect x="410" y="220" width="170" height="280" fill="#e2e8f0"/><rect x="610" y="260" width="110" height="240" fill="#cbd5e1"/><g fill="#fbbf24"><rect x="115" y="300" width="20" height="20"/><rect x="150" y="300" width="20" height="20"/></g><rect y="620" width="800" height="180" fill="#0f172a"/></svg>`),
+      svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><rect width="800" height="800" fill="#7dd3fc"/><circle cx="640" cy="170" r="70" fill="#fef3c7"/><rect y="470" width="800" height="330" fill="#fcd34d"/><path d="M0 620Q180 560 420 600T800 560V800H0Z" fill="#f59e0b"/><path d="M100 440Q250 420 410 440" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/></svg>`)
+    ];
+
+    let imageUrl = sampleImages[0];
+    let gridSize = 3;
+    let pieces = [];
+    let boardState = [];
+    let trayState = [];
+    let selectedId = null;
+    let loadNumber = 0;
+
+    function shuffle(items) {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+
+    function makeTile(piece, onBoard) {
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'tile' + (onBoard ? ' board-tile' : '') +
+        (!onBoard && selectedId === piece.id ? ' selected' : '');
+      tile.setAttribute('aria-label', `Puzzleteil ${piece.id + 1}`);
+      const img = document.createElement('img');
+      img.src = piece.src;
+      img.alt = '';
+      tile.appendChild(img);
+      tile.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (onBoard) {
+          const index = boardState.indexOf(piece.id);
+          if (index !== -1) {
+            boardState[index] = null;
+            trayState.push(piece.id);
+            selectedId = piece.id;
+            render();
+            statusText.textContent = 'Teil zurückgelegt. Wähle ein Feld für das Teil.';
+          }
+          return;
+        }
+        selectedId = selectedId === piece.id ? null : piece.id;
+        renderTray();
+        statusText.textContent = selectedId === null
+          ? 'Auswahl aufgehoben.'
+          : 'Teil gewählt — tippe auf das passende Feld.';
+      });
+      return tile;
+    }
+
+    function renderTray() {
+      trayEl.innerHTML = '';
+      trayState.forEach((id) => {
+        const piece = pieces[id];
+        if (piece) trayEl.appendChild(makeTile(piece, false));
+      });
+      pieceCount.textContent = trayState.length ? `(${trayState.length})` : '';
+    }
+
+    function renderBoard() {
+      boardEl.style.setProperty('--grid-size', gridSize);
+      boardEl.innerHTML = '';
+      boardState.forEach((id, index) => {
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.setAttribute('role', 'button');
+        slot.setAttribute('aria-label', `Feld ${index + 1}`);
+        if (id !== null) {
+          slot.classList.add('correct');
+          slot.appendChild(makeTile(pieces[id], true));
+        }
+        slot.addEventListener('click', () => {
+          if (selectedId === null) return;
+          if (selectedId !== index) {
+            statusText.textContent = 'Das Teil passt hier noch nicht. Versuch es an einem anderen Feld.';
+            return;
+          }
+          boardState[index] = selectedId;
+          trayState = trayState.filter((pieceId) => pieceId !== selectedId);
+          selectedId = null;
+          render();
+          if (boardState.every((pieceId, slotIndex) => pieceId === slotIndex)) {
+            winMessage.hidden = false;
+            statusText.textContent = 'Puzzle gelöst!';
+          } else {
+            statusText.textContent = 'Richtig! Weiter geht’s.';
+          }
+        });
+        boardEl.appendChild(slot);
+      });
+    }
+
+    function render() {
+      renderBoard();
+      renderTray();
+    }
+
+    function startGame(sourceUrl = imageUrl, fallbackUrl = imageUrl) {
+      const currentLoad = ++loadNumber;
+      winMessage.hidden = true;
+      statusText.textContent = 'Bild wird vorbereitet …';
+      const restorePreviousImage = () => {
+        imageUrl = fallbackUrl;
+        preview.src = fallbackUrl;
+      };
+      const image = new Image();
+      image.onload = () => {
+        if (currentLoad !== loadNumber) return;
+        try {
+        const maxImageSize = 1600;
+        const scale = Math.min(1, maxImageSize / Math.max(image.naturalWidth, image.naturalHeight));
+        const processedWidth = Math.max(1, Math.round(image.naturalWidth * scale));
+        const processedHeight = Math.max(1, Math.round(image.naturalHeight * scale));
+        const imageCanvas = document.createElement('canvas');
+        imageCanvas.width = processedWidth;
+        imageCanvas.height = processedHeight;
+        const imageContext = imageCanvas.getContext('2d');
+        if (!imageContext) {
+          statusText.textContent = 'Das Foto konnte nicht verarbeitet werden. Bitte wähle ein anderes Bild.';
+          restorePreviousImage();
+          return;
+        }
+        imageContext.drawImage(image, 0, 0, processedWidth, processedHeight);
+        const normalizedImageUrl = imageCanvas.toDataURL('image/jpeg', 0.9);
+
+        const ratio = processedWidth / processedHeight;
+        boardEl.style.setProperty('--image-ratio', ratio);
+        trayEl.style.setProperty('--piece-ratio', ratio);
+        preview.style.setProperty('--image-ratio', ratio);
+        preview.src = normalizedImageUrl;
+        imageUrl = normalizedImageUrl;
+        pieces = [];
+        for (let id = 0; id < gridSize * gridSize; id++) {
+          const row = Math.floor(id / gridSize);
+          const col = id % gridSize;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(processedWidth / gridSize));
+          canvas.height = Math.max(1, Math.round(processedHeight / gridSize));
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            statusText.textContent = 'Das Bild konnte leider nicht verarbeitet werden.';
+            restorePreviousImage();
+            return;
+          }
+          ctx.drawImage(imageCanvas, col * processedWidth / gridSize, row * processedHeight / gridSize,
+            processedWidth / gridSize, processedHeight / gridSize, 0, 0, canvas.width, canvas.height);
+          pieces.push({ id, src: canvas.toDataURL('image/png') });
+        }
+        boardState = Array(gridSize * gridSize).fill(null);
+        trayState = shuffle(pieces.map((piece) => piece.id));
+        selectedId = null;
+        render();
+        statusText.textContent = 'Wähle ein Teil und tippe auf die passende Stelle.';
+        } catch (error) {
+          statusText.textContent = 'Safari konnte dieses Foto nicht verarbeiten. Bitte wähle es als JPEG aus oder speichere zuerst eine Kopie in der Dateien-App.';
+          restorePreviousImage();
+          console.error('Foto-Puzzle: Bildverarbeitung fehlgeschlagen.', error);
+        }
+      };
+      image.onerror = () => {
+        if (currentLoad === loadNumber) {
+          statusText.textContent = 'Safari konnte dieses Fotoformat nicht öffnen. Bitte wähle ein JPEG- oder PNG-Bild.';
+          restorePreviousImage();
+        }
+      };
+      image.src = sourceUrl;
+    }
+
+    imageUpload.addEventListener('change', () => {
+      const file = imageUpload.files && imageUpload.files[0];
+      imageUpload.value = '';
+      if (!file) return;
+
+      if (file.type && !file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)) {
+        statusText.textContent = 'Bitte wähle eine Bilddatei aus.';
+        return;
+      }
+
+      statusText.textContent = 'Foto wird geladen …';
+      const previousImageUrl = imageUrl;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result !== 'string') {
+          statusText.textContent = 'Das ausgewählte Foto konnte nicht gelesen werden. Bitte versuche es erneut.';
+          return;
+        }
+        startGame(reader.result, previousImageUrl);
+      };
+      reader.onerror = () => {
+        statusText.textContent = 'Das Foto konnte nicht gelesen werden. Bitte prüfe den Zugriff auf deine Mediathek und versuche es erneut.';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    difficultyEl.addEventListener('change', () => {
+      gridSize = Number(difficultyEl.value);
+      startGame();
+    });
+
+    document.getElementById('newGameBtn').addEventListener('click', () => {
+      imageUrl = sampleImages[Math.floor(Math.random() * sampleImages.length)];
+      startGame();
+    });
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch((error) => {
+          console.error('Foto-Puzzle: Offline-Installation fehlgeschlagen.', error);
+        });
+      });
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
