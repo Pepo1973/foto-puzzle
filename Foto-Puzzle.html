@@ -127,14 +127,36 @@
     .tile.selected { outline: 3px solid #fbbf24; outline-offset: 1px; }
     .board .tile { height: 100%; border: 0; border-radius: 0; box-shadow: none; }
     @media (max-width: 700px) {
-      body { padding-left: 10px; padding-right: 10px; }
-      .topbar { align-items: flex-start; }
+      body {
+        min-height: 100svh;
+        padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
+      }
+      .app { width: 100%; }
+      .topbar { align-items: center; gap: 6px; margin-bottom: 8px; }
+      h1 { font-size: 1.3rem; }
       .controls { width: 100%; }
-      .controls > * { flex: 1 1 auto; }
-      .game { grid-template-columns: 1fr; }
-      .panel { padding: 12px; }
-      .board { width: min(100%, 560px); }
-      .pieces { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .controls > * { flex: 1 1 0; min-width: 0; padding: 8px 6px; font-size: .84rem; }
+      .status { padding: 8px 10px; margin-bottom: 8px; font-size: .84rem; }
+      .win { padding: 10px 12px; margin-bottom: 8px; }
+      .preview { display: none; }
+      .game {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+        align-items: start;
+        gap: 8px;
+      }
+      .panel { padding: 8px; border-radius: 12px; }
+      .game h2 { font-size: .9rem; }
+      .board {
+        width: min(100%, calc((100svh - 230px) * var(--image-ratio, 1)));
+        margin-top: 8px;
+      }
+      .pieces {
+        grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
+        gap: 4px;
+        margin-top: 8px;
+      }
+      .tile { border-width: 1px; border-radius: 5px; }
+      .board .tile { border-radius: 0; }
     }
     @media (min-width: 701px) {
       .pieces { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -254,6 +276,7 @@
     }
 
     function renderTray() {
+      trayEl.style.setProperty('--grid-size', gridSize);
       trayEl.innerHTML = '';
       trayState.forEach((id) => {
         const piece = pieces[id];

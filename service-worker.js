@@ -1,4 +1,4 @@
-const CACHE_NAME = 'foto-puzzle-v1';
+const CACHE_NAME = 'foto-puzzle-v2';
 const APP_FILES = [
   './',
   './index.html',
