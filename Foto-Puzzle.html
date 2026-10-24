@@ -127,11 +127,19 @@
     .tile.selected { outline: 3px solid #fbbf24; outline-offset: 1px; }
     .board .tile { height: 100%; border: 0; border-radius: 0; box-shadow: none; }
     @media (max-width: 700px) {
+      html {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
       body {
-        height: 100vh;
-        height: 100svh;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: auto;
         min-height: 0;
         overflow: hidden;
+        overscroll-behavior: none;
         padding: max(4px, env(safe-area-inset-top)) 6px max(4px, env(safe-area-inset-bottom));
       }
       .app {
