@@ -179,6 +179,18 @@
         -webkit-overflow-scrolling: touch;
       }
       .pieces .tile { width: min(100%, 50px); justify-self: center; }
+      .app[data-grid-size="5"] .board {
+        width: min(100%, calc(max(120px, 100svh - 390px) * var(--image-ratio, 1)));
+        max-height: max(120px, 100svh - 390px);
+      }
+      .app[data-grid-size="7"] .board {
+        width: min(100%, calc(clamp(96px, 64.4svh - 247px, 364px) * var(--image-ratio, 1)));
+        max-height: clamp(96px, 64.4svh - 247px, 364px);
+      }
+      .app[data-grid-size="5"] .pieces .tile,
+      .app[data-grid-size="7"] .pieces .tile {
+        width: min(100%, 50px, max(12px, 14.2857svh - 54.3px));
+      }
       .tile { border-width: 1px; border-radius: 3px; }
       .board .tile { border-radius: 0; }
     }
@@ -232,6 +244,7 @@
   </div>
 
   <script>
+    const appEl = document.querySelector('.app');
     const boardEl = document.getElementById('board');
     const trayEl = document.getElementById('tray');
     const difficultyEl = document.getElementById('difficulty');
@@ -345,6 +358,7 @@
     }
 
     function render() {
+      appEl.dataset.gridSize = gridSize;
       renderBoard();
       renderTray();
     }
