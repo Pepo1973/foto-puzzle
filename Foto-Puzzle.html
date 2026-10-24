@@ -180,16 +180,18 @@
       }
       .pieces .tile { width: min(100%, 50px); justify-self: center; }
       .app[data-grid-size="5"] .board {
-        width: min(100%, calc(max(120px, 100svh - 390px) * var(--image-ratio, 1)));
-        max-height: max(120px, 100svh - 390px);
+        width: min(100%, calc(max(120px, 146.9svh - 658px) * var(--image-ratio, 1)));
+        max-height: max(120px, 146.9svh - 658px);
       }
       .app[data-grid-size="7"] .board {
-        width: min(100%, calc(clamp(96px, 64.4svh - 247px, 364px) * var(--image-ratio, 1)));
-        max-height: clamp(96px, 64.4svh - 247px, 364px);
+        width: min(100%, calc(clamp(96px, 129.4svh - 585px, 500px) * var(--image-ratio, 1)));
+        max-height: clamp(96px, 129.4svh - 585px, 500px);
       }
-      .app[data-grid-size="5"] .pieces .tile,
+      .app[data-grid-size="5"] .pieces .tile {
+        width: min(100%, 44px, max(12px, 4.9svh - .7px), max(12px, 14.2857svh - 54.3px));
+      }
       .app[data-grid-size="7"] .pieces .tile {
-        width: min(100%, 50px, max(12px, 14.2857svh - 54.3px));
+        width: min(100%, 36px, max(12px, 5svh - 6px), max(12px, 14.2857svh - 54.3px));
       }
       .tile { border-width: 1px; border-radius: 3px; }
       .board .tile { border-radius: 0; }
